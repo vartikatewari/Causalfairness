@@ -24,7 +24,7 @@ We have designed the project as a package for easy usage.
  `import causalfairness`
 
 
-Also, you can run the jupyter notebooks for a tutorial. Which are present in notebook folder.
+Also, you can run the jupyter notebook for a tutorial which is present in notebook folder.
 
 
 ### Prerequisites 
