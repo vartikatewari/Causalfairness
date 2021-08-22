@@ -21,9 +21,8 @@ Our goal is to validate our causal assumptions; if our causal assumptions are va
 ## How to run the project
 We have designed the project as a package for easy usage.
 
-'
-import causalfairness
-'
+ `import causalfairness`
+
 
 Also, you can run the jupyter notebooks for a tutorial. Which are present in notebook folder.
 
