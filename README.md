@@ -7,7 +7,7 @@
 
 
 
-The following videos give an overview of our project and goals:
+The following videos give an overview of our project and goals and a code walkthrough:
 
 ## Problem
 To replicate the Deep Structural Causal Models for Tractable Counterfactual Inference[1]paper , and apply it to google cartoon faces dataset[3] and answer counterfactual queries on the same. 
@@ -24,13 +24,23 @@ We have designed the project as a package for easy usage.
  `import causalfairness`
 
 
-Also, you can run the jupyter notebooks for a tutorial. Which are present in notebook folder.
+Also, you can run the jupyter notebook for a tutorial which is present in notebook folder.
 
 
 ### Prerequisites 
 
+Use pip install package-name to install the dependencies. 
 
-#### Notebook
+```
+pyro
+torch
+numpy
+pandas 
+
+```
+
+### License
+This project is licensed under MIT - see the LICENSE.md file for details
 
 
 
