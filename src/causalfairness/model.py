@@ -1,26 +1,26 @@
+""" Contains model definitions """
+
 import torch
 import pyro
-from pyro.nn import PyroModule, pyro_method
 from pyro.distributions import Normal, TransformedDistribution
 from pyro.distributions.torch_transform import ComposeTransformModule
 from pyro.distributions.conditional import ConditionalTransformedDistribution
 from pyro.distributions.transforms import (
-    Spline, ExpTransform, ComposeTransform, ConditionalAffineCoupling,
+    Spline, ComposeTransform, ConditionalAffineCoupling,
     GeneralizedChannelPermute, SigmoidTransform
     )
-
+from pyro.nn import DenseNN
 from src.normalizingFlowsSCM.transforms import (
     ReshapeTransform, SqueezeTransform,
-    TransposeTransform, LearnedAffineTransform,
+    TransposeTransform,
     ConditionalAffineTransform, ActNorm
     )
-
-from pyro.nn import DenseNN
 from src.normalizingFlowsSCM.arch import BasicFlowConvNet
 
 
 class FlowSCM(pyroModule):
-    def __init__(self, use_affine_ex=True, **kwargs)
+    """ definition of FlowSCM class"""
+    def __init__(self, use_affine_ex=True, **kwargs):
         super.__init__(**kwargs)
 
         self.num_scales = 2
@@ -80,7 +80,9 @@ class FlowSCM(pyroModule):
 
                 self.x_transforms.append(TransposeTransform(torch.tensor((1, 2, 0))))
 
-                ac = ConditionalAffineCoupling(c // 2, BasicFlowConvNet(c // 2, self.hidden_channels, (c // 2, c // 2), 2))
+                ac = ConditionalAffineCoupling(c // 2,
+                                               BasicFlowConvNet(c // 2,
+                                                self.hidden_channels, (c // 2, c // 2), 2))
                 self.trans_modules.append(ac)
                 self.x_transforms.append(ac)
 

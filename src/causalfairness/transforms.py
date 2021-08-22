@@ -1,8 +1,14 @@
-import torch
+# type: ignore
+# type: ignore[C0301]
+""" transform definition"""
+
 from torch.distributions.utils import lazy_property
 from torch.distributions import constraints
 from torch.distributions.transforms import Transform
+import torch
 import numpy as np
+
+
 
 
 class SqueezeTransform(Transform):
@@ -33,20 +39,27 @@ class SqueezeTransform(Transform):
         the base distribution (or the output of a previous transform)
         """
         if inputs.dim() < 3:
-            raise ValueError(f'Expecting inputs with at least 3 dimensions, got {inputs.shape} - {inputs.dim()}')
+            raise ValueError(
+                f"Expecting inputs with at least 3 dimensions, got {inputs.shape} - {inputs.dim()}"
+            )
 
         *batch_dims, c, h, w = inputs.size()
         num_batch = len(batch_dims)
 
         if h % self.factor != 0 or w % self.factor != 0:
-            raise ValueError('Input image size not compatible with the factor.')
+            raise ValueError("Input image size not compatible with the factor.")
 
-        inputs = inputs.view(*batch_dims, c, h // self.factor, self.factor, w // self.factor,
-                             self.factor)
+        inputs = inputs.view(
+            *batch_dims, c, h // self.factor, self.factor, w // self.factor, self.factor
+        )
         permute = np.array((0, 2, 4, 1, 3)) + num_batch
         inputs = inputs.permute(*np.arange(num_batch), *permute).contiguous()
-        inputs = inputs.view(*batch_dims, c * self.factor * self.factor, h // self.factor,
-                             w // self.factor)
+        inputs = inputs.view(
+            *batch_dims,
+            c * self.factor * self.factor,
+            h // self.factor,
+            w // self.factor,
+        )
 
         return inputs
 
@@ -57,18 +70,24 @@ class SqueezeTransform(Transform):
         Inverts y => x.
         """
         if inputs.dim() < 3:
-            raise ValueError(f'Expecting inputs with at least 3 dimensions, got {inputs.shape}')
+            raise ValueError(
+                f"Expecting inputs with at least 3 dimensions, got {inputs.shape}"
+            )
 
         *batch_dims, c, h, w = inputs.size()
         num_batch = len(batch_dims)
 
         if c < 4 or c % 4 != 0:
-            raise ValueError('Invalid number of channel dimensions.')
+            raise ValueError("Invalid number of channel dimensions.")
 
-        inputs = inputs.view(*batch_dims, c // self.factor ** 2, self.factor, self.factor, h, w)
+        inputs = inputs.view(
+            *batch_dims, c // self.factor ** 2, self.factor, self.factor, h, w
+        )
         permute = np.array((0, 3, 1, 4, 2)) + num_batch
         inputs = inputs.permute(*np.arange(num_batch), *permute).contiguous()
-        inputs = inputs.view(*batch_dims, c // self.factor ** 2, h * self.factor, w * self.factor)
+        inputs = inputs.view(
+            *batch_dims, c // self.factor ** 2, h * self.factor, w * self.factor
+        )
 
         return inputs
 
@@ -81,13 +100,14 @@ class SqueezeTransform(Transform):
         determinant is -1 or +1), and so returning a vector of zeros works.
         """
 
-        log_abs_det_jacobian = torch.zeros(x.size()[:-3], dtype=x.dtype, layout=x.layout, device=x.device)
+        log_abs_det_jacobian = torch.zeros(
+            x.size()[:-3], dtype=x.dtype, layout=x.layout, device=x.device
+        )
         return log_abs_det_jacobian
 
     def get_output_shape(self, c, h, w):
-        return (c * self.factor * self.factor,
-                h // self.factor,
-                w // self.factor)
+        """ returns output shape"""
+        return (c * self.factor * self.factor, h // self.factor, w // self.factor)
 
 
 class ReshapeTransform(Transform):
@@ -110,11 +130,14 @@ class ReshapeTransform(Transform):
         :class:`~pyro.distributions.TransformedDistribution` `x` is a sample from
         the base distribution (or the output of a previous transform)
         """
-        batch_dims = inputs.shape[:-self.event_dim]
-        inp_shape = inputs.shape[-self.event_dim:]
+        batch_dims = inputs.shape[: -self.event_dim]
+        inp_shape = inputs.shape[-self.event_dim :]
         if inp_shape != self.input_shape:
-            raise RuntimeError('Unexpected inputs shape ({}, but expecting {})'
-                               .format(inp_shape, self.input_shape))
+            raise RuntimeError(
+                "Unexpected inputs shape ({}, but expecting {})".format(
+                    inp_shape, self.input_shape
+                )
+            )
         return inputs.reshape(*batch_dims, *self.output_shape)
 
     def _inverse(self, inputs):
@@ -123,11 +146,14 @@ class ReshapeTransform(Transform):
         :type y: torch.Tensor
         Inverts y => x.
         """
-        batch_dims = inputs.shape[:-self.inv_event_dim]
-        inp_shape = inputs.shape[-self.inv_event_dim:]
+        batch_dims = inputs.shape[: -self.inv_event_dim]
+        inp_shape = inputs.shape[-self.inv_event_dim :]
         if inp_shape != self.output_shape:
-            raise RuntimeError('Unexpected inputs shape ({}, but expecting {})'
-                               .format(inp_shape, self.output_shape))
+            raise RuntimeError(
+                "Unexpected inputs shape ({}, but expecting {})".format(
+                    inp_shape, self.output_shape
+                )
+            )
         return inputs.reshape(*batch_dims, *self.input_shape)
 
     def log_abs_det_jacobian(self, x, y):
@@ -139,7 +165,9 @@ class ReshapeTransform(Transform):
         determinant is -1 or +1), and so returning a vector of zeros works.
         """
 
-        log_abs_det_jacobian = torch.zeros(x.size()[:-self.event_dim], dtype=x.dtype, layout=x.layout, device=x.device)
+        log_abs_det_jacobian = torch.zeros(
+            x.size()[: -self.event_dim], dtype=x.dtype, layout=x.layout, device=x.device
+        )
         return log_abs_det_jacobian
 
 
@@ -182,9 +210,9 @@ class TransposeTransform(Transform):
     @lazy_property
     def inv_permutation(self):
         result = torch.empty_like(self.permutation, dtype=torch.long)
-        result[self.permutation] = torch.arange(self.permutation.size(0),
-                                                dtype=torch.long,
-                                                device=self.permutation.device)
+        result[self.permutation] = torch.arange(
+            self.permutation.size(0), dtype=torch.long, device=self.permutation.device
+        )
         return result
 
     def _call(self, x):
@@ -199,7 +227,9 @@ class TransposeTransform(Transform):
         *batch_dims, c, h, w = x.size()
         num_batch = len(batch_dims)
 
-        return x.permute(*np.arange(num_batch), *(self.permutation + num_batch)).contiguous()
+        return x.permute(
+            *np.arange(num_batch), *(self.permutation + num_batch)
+        ).contiguous()
 
     def _inverse(self, y):
         """
@@ -211,7 +241,9 @@ class TransposeTransform(Transform):
         *batch_dims, c, h, w = y.size()
         num_batch = len(batch_dims)
 
-        return y.permute(*np.arange(num_batch), *(self.inv_permutation + num_batch)).contiguous()
+        return y.permute(
+            *np.arange(num_batch), *(self.inv_permutation + num_batch)
+        ).contiguous()
 
     def log_abs_det_jacobian(self, x, y):
         """
@@ -222,7 +254,9 @@ class TransposeTransform(Transform):
         determinant is -1 or +1), and so returning a vector of zeros works.
         """
 
-        log_abs_det_jacobian = torch.zeros(x.size()[:-self.event_dim], dtype=x.dtype, layout=x.layout, device=x.device)
+        log_abs_det_jacobian = torch.zeros(
+            x.size()[: -self.event_dim], dtype=x.dtype, layout=x.layout, device=x.device
+        )
         return log_abs_det_jacobian
 
 
@@ -240,9 +274,21 @@ class LearnedAffineTransform(TransformModule, transforms.AffineTransform):
         super().__init__(loc=loc, scale=scale, **kwargs)
 
         if loc is None:
-            self.loc = torch.nn.Parameter(torch.zeros([1, ]))
+            self.loc = torch.nn.Parameter(
+                torch.zeros(
+                    [
+                        1,
+                    ]
+                )
+            )
         if scale is None:
-            self.scale = torch.nn.Parameter(torch.ones([1, ]))
+            self.scale = torch.nn.Parameter(
+                torch.ones(
+                    [
+                        1,
+                    ]
+                )
+            )
 
     def _broadcast(self, val):
         dim_extension = tuple(1 for _ in range(val.dim() - 1))
@@ -282,8 +328,9 @@ class LowerCholeskyAffine(pyro_transforms.LowerCholeskyAffine):
         Calculates the elementwise determinant of the log Jacobian, i.e.
         log(abs(dy/dx)).
         """
-        return torch.ones(x.size()[:-1], dtype=x.dtype, layout=x.layout, device=x.device) * \
-            self.scale_tril.diagonal(dim1=-2, dim2=-1).log().sum(-1).sum(-1)
+        return torch.ones(
+            x.size()[:-1], dtype=x.dtype, layout=x.layout, device=x.device
+        ) * self.scale_tril.diagonal(dim1=-2, dim2=-1).log().sum(-1).sum(-1)
 
 
 class ActNorm(TransformModule):
@@ -298,7 +345,6 @@ class ActNorm(TransformModule):
         Reference:
         > D. Kingma et. al., Glow: Generative flow with invertible 1x1 convolutions, NeurIPS 2018.
         """
-        super().__init__()
 
         self.initialized = False
         self.log_scale = nn.Parameter(torch.zeros(features))
@@ -306,6 +352,7 @@ class ActNorm(TransformModule):
 
     @property
     def scale(self):
+        """ returns scale"""
         return torch.exp(self.log_scale)
 
     def _broadcastable_scale_shift(self, inputs):
@@ -355,7 +402,7 @@ class ActNorm(TransformModule):
 
     def _initialize(self, inputs):
         """Data-dependent initialization, s.t. post-actnorm activations have zero mean and unit
-        variance. """
+        variance."""
         if inputs.dim() == 4:
             num_channels = inputs.shape[1]
             inputs = inputs.permute(0, 2, 3, 1).reshape(-1, num_channels)
@@ -367,5 +414,3 @@ class ActNorm(TransformModule):
             self.shift.data = -mu
 
         self.initialized = True
-
-
