@@ -29,6 +29,16 @@ Also, you can run the jupyter notebooks for a tutorial. Which are present in not
 
 ### Prerequisites 
 
+Use pip install package-name to install the dependencies. 
+
+```
+pyro
+torch
+numpy
+pandas 
+
+```
+
 ### License
 This project is licensed under MIT - see the LICENSE.md file for details
 
