@@ -7,7 +7,7 @@
 
 
 
-The following videos give an overview of our project and goals:
+The following videos give an overview of our project and goals and a code walkthrough:
 
 ## Problem
 To replicate the Deep Structural Causal Models for Tractable Counterfactual Inference[1]paper , and apply it to google cartoon faces dataset[3] and answer counterfactual queries on the same. 
