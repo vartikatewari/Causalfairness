@@ -29,8 +29,8 @@ Also, you can run the jupyter notebooks for a tutorial. Which are present in not
 
 ### Prerequisites 
 
-
-#### Notebook
+###License
+This project is licensed under MIT - see the LICENSE.md file for details
 
 
 
